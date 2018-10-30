@@ -1,0 +1,516 @@
+
+import java.util.Random;
+import java.util.Scanner;
+
+public class Uhl {
+
+	final static int hashLen = 10;
+	static Random rd;
+	static Scanner sc;
+
+	public static void main(String[] args) {
+		rd = new Random(10);
+		sc = new Scanner(System.in);
+
+		System.out.println("Chaining Hash");
+		ChainHash table1 = new ChainHash(hashLen);
+		testHash(table1, 50, 50);
+		System.out.println();
+
+		System.out.println("Linear Probe Hash");
+		LinearHash table2 = new LinearHash(hashLen);
+		testHash(table2, 14, 50);
+		System.out.println();
+	}
+
+	public static void testHash(Hash table, int items, int maxKey) {
+
+		System.out.println("Initial Hash Table");
+		System.out.println(table);	
+
+		System.out.println("Insertion Test");
+		for (int i = 0; i< items; i++) {
+			Object k = rd.nextInt(maxKey);
+			Object v = rd.nextInt(1000);
+			System.out.println("Insert (" + k + "," + v +"):");
+			table.insert(k, v); 
+			System.out.println(table);	
+		}
+
+		System.out.println("Search and Remove Test");
+		for (int i = 0; i < maxKey; i++) {
+			HashPair temp = table.search(i);
+			if (temp != null)
+				System.out.println("\nSearch (" + i + "): " + temp);
+			else
+				System.out.print(i + ", ");
+
+			if (temp != null) {
+				table.remove(i);
+				System.out.println("(" + i + ")-removed Hash Table:");
+				System.out.println(table);
+			}
+		}
+		System.out.println();
+
+		System.out.println("String Hash Table Test");
+
+		String str;
+
+		while (true) {
+			System.out.println("Empty line to quit");
+			System.out.println("0,key,value to insert");
+			System.out.println("1,key to search");
+			System.out.println("2,key to remove");
+			System.out.print(">");
+
+			if ((str = sc.nextLine()).equals(""))
+				break;
+
+			Scanner ss = new Scanner(str);
+			try {
+				ss.useDelimiter(",");
+
+				char code = ss.next().charAt(0);
+				String key = ss.next();
+				switch(code) {
+				case '0':
+					table.insert(key, ss.next());
+					break;
+				case '1':
+					System.out.println("Found: " + table.search(key));
+					break;
+				case '2':
+					table.remove(table.search(key));
+					break;
+				default:
+				}
+				System.out.println(table);
+			} catch (RuntimeException i) {
+				System.out.println("Input Error");
+			} finally {
+				if (ss != null)
+					ss.close();
+			}
+
+		}
+		System.out.println();
+	}
+
+
+	public static class ChainHash extends Hash {
+
+		DLList[] hashTable;
+		boolean[] emptyAfterRemoval;
+
+		ChainHash(int capacity){
+			hashTable = new DLList[capacity];
+			for(int i = 0; i<capacity; i++)
+			{
+				hashTable[i]=new DLList();
+			}
+
+		}
+
+		boolean insertBook(HashPair item) {
+			DLList bucketList = hashTable[hash(item.key, hashTable.length)];
+			bucketList.append(new DLNode(item));
+			return true;
+		}
+
+		boolean insert(HashPair item) {
+			DLList bucketList = hashTable[hash(item.key, hashTable.length)];
+			DLNode temp = bucketList.search(item.key);
+			if(temp != null)
+				bucketList.remove(temp);
+
+			bucketList.append(new DLNode(item));
+			return true;
+		}
+
+		boolean removeBook(HashPair item){
+			DLList bucketList = hashTable[hash(item.key, 0)];
+			DLNode itemNode = bucketList.search(item);
+			if(itemNode != null){
+				bucketList.remove(itemNode);;
+			}
+
+			return false;
+		}
+
+		boolean remove(Object key) {
+			DLList bucketList = hashTable[hash(key, hashTable.length)];
+			DLNode temp = bucketList.search(key);
+			if(temp != null) {
+				bucketList.remove(temp);			
+				return true;
+			} else
+				return false;
+		}
+
+		HashPair search(Object key) {
+			DLList bucketList = hashTable[hash(key, hashTable.length)];
+			DLNode result = bucketList.search(key);
+			if(result != null) {			
+				return (HashPair)result.data;
+			}
+			else 
+				return null;
+
+		}
+		public String toString() 
+		{
+			String temp = "";
+			for(int i = 0; i < hashTable.length; i++){
+				temp += "{" + i + " : " + hashTable[i].toString() + "} \n";
+
+			}
+			return temp;
+		}
+
+	}
+
+
+	public static class LinearHash extends Hash{
+
+
+		HashPair[] hashTable;
+		boolean[] emptyAfterRemoval;
+
+		//a null entry in hashtable means it is empty, and empty after removal is true if so
+
+		LinearHash(int capacity) {
+			hashTable = new HashPair[capacity];
+			emptyAfterRemoval = new boolean[capacity];
+			//allocates the array for hashTable and emptyAfterRemoval
+		}
+
+		boolean insertBook(HashPair item){
+
+			HashPair bucketList = hashTable[hash(item.key, hashTable.length)];
+			return false;
+
+		}
+		boolean insert(HashPair item){
+
+			int bucket = hash(item.key, hashTable.length);
+			int bucketsProbed = 0;
+
+			while (bucketsProbed < hashTable.length){
+				if(hashTable[bucket] == null || emptyAfterRemoval[bucket]){
+					hashTable[bucket] = item;
+					return true;
+				}
+				//Increment bucket index
+				bucket = (bucket + 1) % hashTable.length;
+				//Increment number of buckets probed
+				++bucketsProbed;
+			}
+			return false;
+
+
+		}
+		boolean remove(Object key){
+
+			int bucket = hash(key, hashTable.length);
+			int bucketsProbed = 0;
+
+			while ((hashTable[bucket] != null || emptyAfterRemoval[bucket]) && (bucketsProbed < hashTable.length))
+			{
+				if ((hashTable[bucket] != null) && (hashTable[bucket].key.equals(key))){
+					emptyAfterRemoval[bucket] = true;
+					hashTable[bucket].equals(emptyAfterRemoval);
+					hashTable[bucket] = null;
+					return true;
+				}
+				bucket = (bucket + 1) % hashTable.length;
+				++bucketsProbed;
+			}
+			return false;
+		}
+
+		HashPair search(Object key){
+			int bucket = hash(key, hashTable.length);
+			int bucketsProbed = 0;
+
+			while ((hashTable[bucket] != null || emptyAfterRemoval[bucket]) && (bucketsProbed < hashTable.length)){
+				if ((hashTable[bucket] != null) && (hashTable[bucket].key.equals(key))){
+					return hashTable[bucket];
+				}
+				bucket = (bucket + 1) % hashTable.length;
+				++bucketsProbed;
+			}
+			return null;
+		}
+		public String toString() 
+		{
+			String temp = "";
+			for(int i = 0; i < hashTable.length; i++){
+				if(hashTable[i] == null && emptyAfterRemoval[i]){
+					temp += "{" + i + " : X removed }\n";//"{"+i+":X initial}";
+				}
+				else if(hashTable[i] != null ){
+					temp += "{" + i + " : " + hashTable[i].toString() + "}\n";
+				}
+				else if(hashTable[i] == null){
+					temp += "{" + i + " : X initial" + "}\n";
+				}
+
+			}
+			return temp;
+
+		}
+
+	}
+
+	public static class HashPair {
+		Object key;
+		Object value;
+
+		HashPair(Object k, Object o) {
+			key = k;
+			value = o;
+		}
+
+		//This part is critical to get searches to work on HashPair
+		public boolean equals(Object o) {
+			if (o instanceof HashPair)
+				return key.equals(((HashPair)o).key); //compare HashPair.key to HashPair.key
+			return key.equals(o); //otherwise comparing HashPair.key with just key
+		}
+
+		public String toString() {
+			return "(" + key + "," + value + ")";
+		}
+
+	}
+
+
+	public static abstract class Hash {
+		abstract boolean insertBook(HashPair item);
+
+		abstract boolean insert(HashPair item);
+
+		abstract boolean remove(Object key);
+
+		abstract HashPair search(Object Key);
+
+		boolean insert(Object k, Object o) {
+			return insert(new HashPair(k, o));
+		}
+
+		static int pMod(int i, int N){
+			int temp = i % N;
+			if(temp < 0)
+				return (N + temp);
+			else
+				return (temp);
+		}
+		static int hashMult(String key, int N) {
+			int stringHash = 5381;
+			int hashMultiplier = 33;
+
+			for (int i = 0; i < key.length(); i++){
+				char strChar = key.charAt(i);        
+				stringHash = (stringHash * hashMultiplier) + strChar;
+			}
+			return pMod(stringHash, N);
+		}
+		public static int hash(Object key, int N) {
+			if (key instanceof Integer) {
+				return pMod((Integer)key, N);
+			}
+			if (key instanceof String) {
+				return hashMult((String)key, N);
+			}
+			//	        return key.hashCode();
+			return hashMult(key.toString(), N);
+		}
+
+		boolean instert(Object k, Object o){           //#5
+			return insert(new HashPair(k,o));
+		}
+
+
+	}
+
+
+	public static class DLNode {
+		Object data;
+		DLNode next;
+		DLNode prev;
+
+		DLNode(Object o) {
+			data = o;
+			next = null;
+			prev = null;
+		}
+
+		public String toString() {
+			return "[" + data + "]";
+		}
+	}
+
+
+	public static class DLList {
+		private int n;
+		private DLNode head;
+		private DLNode tail;
+		private DLNode prev;
+		public DLNode sucNode;
+		public DLNode predNode;
+
+		DLList() {
+			head = null;
+			tail = null;
+			prev = null;
+		}
+		public boolean isEmpty(){ 
+			return n == 0; 
+		}
+		public int size(){ 
+			return n;      
+		}
+		public void append(DLNode newNode)
+		{
+			if(head == null){
+				head = newNode;
+				tail = newNode;
+			}
+			else{
+				tail.next = newNode;
+				newNode.prev = tail;
+				tail = newNode;
+			}
+		}
+		public void prepend(DLNode newNode){
+			if(head == null){
+				head = newNode;
+				tail = newNode;
+			}
+			else {
+				newNode.next = head;
+				this.head = newNode;
+				head = newNode;
+			}
+		}
+		public void insertAfter(DLNode curNode, DLNode newNode){
+			//curNode = tail;
+
+			if(head ==null){
+				head = newNode;
+				tail = newNode;
+			}
+			else if(curNode == tail){
+				tail.next = newNode;
+				this.prev = tail;
+				tail = newNode;
+			}
+			else{
+				sucNode = curNode.next;
+				newNode.next = sucNode;
+				newNode.prev = tail;
+				curNode.next = newNode;
+				sucNode.prev = newNode;
+			}
+		}
+		public void setPrev(DLNode p){
+			prev = p;
+		}
+		public void remove(DLNode curNode){
+			if(curNode == null)
+				return;
+			DLNode sucNode = curNode.next;
+			DLNode predNode = curNode.prev;
+			if(sucNode != null){
+				sucNode.prev = predNode;
+			}
+			if(predNode != null){
+				predNode.next = sucNode;
+			}
+			if(curNode == head){
+				head = sucNode;
+			}
+			if(curNode == tail){
+				tail = predNode;
+			}
+		}
+		public DLNode search (Object key){
+			DLNode curNode = head;
+			while(curNode != null){
+				if(curNode.data.equals(key)) {
+					return curNode;
+				}
+				curNode = curNode.next;
+			}
+			return null;
+		}
+		public DLNode reverseSearch (Object key){
+			DLNode curNode = tail;
+			while(curNode != null){
+				if(curNode.data.equals(key)) {
+					return curNode;
+				}
+				curNode = curNode.prev;
+			}
+			return null;
+		}
+		public String toString(){
+			DLNode curNode = head;
+			String temp = "";
+
+			while(curNode != null){
+				temp += curNode + "->";
+				curNode = curNode.next;
+			}
+			return temp + "X";
+		}
+		void stackPush(DLNode newItem){
+			if(head == null){
+				prepend(newItem);
+			}
+			else{
+				tail.next = newItem;
+				tail = newItem;
+			}
+		}
+		DLNode stackPop(){
+			if(head == null)
+				return null;
+			DLNode poppedItem = head;
+			return poppedItem;
+		}
+		void qeuePush(DLNode newItem){
+			append(newItem);
+		}
+		DLNode queuePop(){
+			if(head == null)
+				return null;
+			DLNode poppedItem = head;
+			return poppedItem;
+		}
+		void push(Object newData){
+			stackPush(new DLNode(newData));
+		}
+		Object pop() {  
+
+			DLNode temp = stackPop();
+
+			if (temp != null) 
+
+				return temp.data;
+
+			return null;
+		}
+		void enqueue(Object newData){
+			append(new DLNode (newData));
+		}
+		public DLNode dequeue(){
+			DLNode poppedItem;
+			poppedItem = head;
+			remove(null);
+			return poppedItem;
+		}
+	}
+
+}
