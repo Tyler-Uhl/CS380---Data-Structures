@@ -1,0 +1,452 @@
+
+public class Uhl {
+	
+	//////////////////////////////////////////////////////////////////
+	//
+	//Part I: Node
+	//
+	//////////////////////////////////////////////////////////////////
+
+	public static class Node<K extends Comparable<K>, T>  {
+		K key;
+		T data;
+		Node<K, T> left;
+		Node<K, T> right;
+
+		Node(K k, T o) {
+			key = k;
+			data = o;
+		}
+
+		public boolean equals(Object o) {
+			if (o instanceof Node<?, ?>)
+				return key.equals(((Node<?, ?>)o).key); //only check the keys
+			return false;
+		}
+
+		public String toString() {
+			return "(" + key +  "," + data +  ")";
+		}
+	}
+
+	//////////////////////////////////////////////////////////////////
+	//
+	//Part II: BST
+	//
+	//////////////////////////////////////////////////////////////////
+
+
+	public static class BST<K extends Comparable<K>, T> {
+
+		protected Node<K, T> root;
+
+		public BST()
+		{
+			root = null;	
+		}
+		//
+		//	K key;
+		//	T data;
+		//	Node<K, T> left;
+		//	Node<K, T> right;
+		//
+		//	public Node root;
+		//
+		//
+		//	BST<Integer,Double>tree1 = new BST<Integer,Double>();
+
+
+		public Node<K, T> search(K key){
+			Node<K, T> cur = this.root;
+			while (cur != null){
+				int comp = key.compareTo(cur.key);
+				if(comp == 0) 
+					return cur;
+				else if (comp < 0) 
+					cur = cur.left;
+				else              
+					cur = cur.right;
+			}
+			return cur;
+		}
+		//////////////////////////////////////////////////////////
+		//  Insert
+		//////////////////////////////////////////////////////////
+		public void insertBook(Node<K, T> node)
+		{
+			if(root==null){
+				root = node;
+			}
+			else{
+				Node<K, T> current = root;
+
+				while(current != null)
+				{	
+					int comp = node.key.compareTo(current.key);
+					if(comp < 0)
+					{				
+						if(current.left==null)
+						{
+							current.left = node;
+							current = null;
+						}
+						else{
+							current = current.left;
+						}
+					}
+					else{
+						if(current.right==null){
+							current.right = node;
+							current = null;
+						}
+						else{
+							current = current.right;
+						}
+					}
+					node.left = null;
+					node.right = null;
+				}
+			}
+		}
+
+		private void insert(Node<K, T> node)
+		{		
+			if(root==null){
+				root = node;
+			}
+			else{
+				Node<K, T> current = root;
+
+				while(current != null)
+				{
+					int comp = node.key.compareTo(current.key);
+
+					if(comp == 0)
+					{
+						current.key = node.key;
+						current.data = node.data;
+						current = null;
+					}
+					else if(comp < 0)
+					{				
+						if(current.left==null){
+							current.left = node;
+							current = null;
+						}
+						else{
+							current = current.left;
+						}
+					}
+					else{
+						if(current.right==null){
+							current.right = node;
+							current = null;
+						}
+						else{
+							current = current.right;
+						}
+					}
+					node.left = null;
+					node.right = null;
+
+				}
+			}
+		}
+
+		public void insert(K key, T data){
+			//Node<K,T> node = new Node<K, T>(key, data);
+			//insert(node);
+			insert(new Node<K, T>(key, data));
+		}
+
+		//////////////////////////////////////////////////////////
+		// Remove
+		//////////////////////////////////////////////////////////
+		public void remove(K key){
+			remove(null, this.root, key);
+		}
+		private void remove(Node<K, T> par, Node<K, T> cur, K key)
+		{
+			Node<K,T> suc;
+			par = null;
+			cur = root;
+			while(cur != null)
+			{
+				if(cur.key.compareTo(key) == 0)
+				{
+					if(cur.left == null && cur.right == null)
+					{
+						if(par==null)
+						{
+							this.root = null;
+						}	
+						else if(par.left == cur)
+						{
+							par.left = null;
+						}
+						else
+						{
+							par.right = null;
+						}
+					}
+					else if(cur.right != null && cur.left == null)
+					{
+						if(par==null)
+						{
+							this.root = cur.left;
+						}	
+						else if(par.left == cur)
+						{
+							par.left = cur.left;
+						}
+						else
+						{
+							par.right = cur.left;
+						}
+					}
+					else if(cur.left != null && cur.right == null)
+					{
+						if(par==null)
+						{
+							this.root = cur.right;
+						}	
+						else if(par.left == cur)
+						{
+							par.left = cur.right;
+						}
+						else
+						{
+							par.right = cur.right;
+						}
+					}
+					else
+					{
+						suc = cur.right;
+						while(suc.left != null)
+						{
+							suc = suc.left;
+						}
+						cur.key = suc.key;
+						cur.data = suc.data;
+						remove(cur, cur.right, suc.key);
+					}
+					return;
+				}
+				else if(cur.key.compareTo(key)< 0)
+				{
+					par = cur;
+					cur = cur.right;
+				}
+				else
+				{
+					par = cur;
+					cur = cur.left;
+				}
+			}
+			return;
+		}
+		
+
+		//////////////////////////////////////////////////////////
+		// Depth
+		//////////////////////////////////////////////////////////
+		public int depth(){
+			return depth(root);
+		}
+		private int depth(Node<K, T> n){
+
+			if(n == null)
+				return 0;
+			else{
+				int leftDepth = depth(n.left);
+				int rightDepth = depth(n.right);
+				if(leftDepth > rightDepth)
+				{
+					return leftDepth + 1;
+				}
+				else
+				{
+					return rightDepth + 1;
+				}
+			}
+		}
+		//////////////////////////////////////////////////////////
+		// Size
+		//////////////////////////////////////////////////////////
+		public int size(){
+			return size(root);
+		}
+		private int size(Node<K, T> n){
+			if(n == null)
+				return 0;
+			else
+				return size(n.left) + size(n.right) + 1;
+		}
+		//////////////////////////////////////////////////////////
+		// In Order String
+		//////////////////////////////////////////////////////////
+
+		public String inorderString(){
+			return inorderString(root);
+		}
+		private String inorderString(Node<K, T> n){		
+			if(n == null)
+				return "";
+			return inorderString(n.left) + 
+					n + 
+					inorderString(n.right);
+		}
+
+		//////////////////////////////////////////////////////////
+		// Pre Order String
+		//////////////////////////////////////////////////////////
+
+		public String preorderString(){
+			return preorderString(root);
+		}
+		private String preorderString(Node<K, T> n){
+			if(n == null)
+				return "";
+			return (n + 
+					preorderString(n.left) +  
+					preorderString(n.right));
+
+		}
+		//////////////////////////////////////////////////////////
+		//Post Order String
+		//////////////////////////////////////////////////////////
+
+		public String postorderString(){
+			return postorderString(root);
+		}
+		private String postorderString(Node<K, T> n){
+			if(n == null)
+				return null;	
+			return (postorderString(n.left) +
+					postorderString(n.right) +
+					n);
+
+		}
+		//////////////////////////////////////////////////////////
+		// To String
+		//////////////////////////////////////////////////////////
+		public String toString(){
+			return toString(root, 1);
+		}
+		private String toString(Node<K, T> n, int depth){
+
+			if(n==null){
+				return "x";
+			}
+			String temp= "[";
+			if(n.left != null)
+				temp += toString(n.left, depth + 1) + "<";
+			temp += + depth + ":" + n;
+			if(n.right != null)
+				temp += ">" + toString(n.right, depth + 1);
+			temp += "]";
+			return temp;
+		}
+
+		////////////////////////////////////////////////////////////////////
+		//
+		// Part III: Rotation and Balancing
+		//
+		////////////////////////////////////////////////////////////////////
+
+		public void balanceDSW(){
+			Node<K, T> pseudoRoot = new Node<K, T>(null, null);
+			pseudoRoot.right = root;
+			int size = treeToVine(pseudoRoot);
+			vineToTree(pseudoRoot, size);
+			root = pseudoRoot.right;
+			pseudoRoot = null;
+			
+//			Object oriented Code
+//			BST<K, T> pseudo = new BST<K, T>();
+//			pseudo.root = new Node<K, T>(null, null);
+//			pseudo.root.right = root;
+//			int size = pseudo.treeToVine(pseudoRoot);
+//			pseudo.vineToTree(pseudoRoot, size);
+		}
+
+
+		protected Node<K, T> rightRotate(Node<K, T> DNode){
+			Node<K, T> BNode = DNode.left;
+			Node<K, T> CNode = BNode.right;
+
+			BNode.right = DNode;
+			DNode.left = CNode;
+
+			return BNode;
+		}
+		protected Node<K, T> leftRotate(Node<K, T> BNode){
+			Node<K, T> DNode = BNode.right;
+			Node<K, T> CNode = DNode.left;
+
+			DNode.left = BNode;
+			BNode.right = CNode;
+
+			return DNode;
+		}
+		private int treeToVine(Node<K, T> root){
+			int size = 0;
+			Node<K,T> tail = root;
+			Node<K,T> rest = tail.right;
+			Node<K,T> temp = null;
+			while(rest != null){
+				if (rest.left == null)
+				{	
+					tail = rest;
+					rest = rest.right;
+					size++;
+				}
+				else {
+					temp = rest.left;
+					rest.left = rest.right;
+					temp.right = rest;
+					rest = temp;
+					tail.right = temp;
+				}
+			}
+			return size;
+		}
+
+		private int fullSize(int size){
+			int val = 1;
+			while (val - 1 <= size){
+				val = val * 2;
+			}return (val/2-1);
+		}
+
+		private void vineToTree(Node<K,T> root, int size){
+			int leaves = size + 1 - fullSize(size);
+			compress(root, leaves);
+			size = size - leaves;
+			while( size> 1){
+				compress(root,(size/2));
+				size = (size/2);
+			}
+		}
+
+		private void compress(Node<K,T> root, int count) {
+			Node<K, T> scanner;
+			scanner = root;
+			for(int i = 1; i < count; i++){
+
+				scanner.right = leftRotate(scanner.right);
+				scanner = scanner.right;
+				//			scanner.left = rightRotate(scanner.left);
+				//			scanner = scanner.left;
+			}
+		}
+	}
+
+
+
+
+
+
+}
+
+
