@@ -229,6 +229,8 @@ public class Uhl {
 				prepend(newItem);
 		}
 		SLNode stackPop(){
+            		if (head == null)
+                		return null;
 			SLNode popItem;
 			popItem = head;
 			removeAfter(null);
