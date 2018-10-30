@@ -1,0 +1,433 @@
+
+public class Uhl {
+
+	static final int N = 4;
+
+	public static void main(String[] args) {
+		testSLList();
+		testDLList();
+		testStackQueue();
+	}
+
+	static void testSLList() {
+
+		System.out.println("Singly-Linked List");
+
+		SLList list1 = new SLList();
+
+		for (int i = 0; i < N; i++)
+			list1.append(new SLNode(i));
+		for (double d = N; d < 2 * N; d++)
+			list1.append(new SLNode(d));
+
+		System.out.println(list1);
+
+
+		SLNode temp = list1.search(0);
+		System.out.println(temp);
+
+		list1.insertAfter(temp, new SLNode(1000));
+		System.out.println(list1);
+
+		list1.removeAfter(temp);
+		System.out.println(list1);
+
+		System.out.println();
+	}
+
+	static void testDLList() {
+
+		System.out.println("Doubly-Linked List");
+
+		DLList list2 = new DLList();
+
+		for (int i = 0; i < N; i++) 
+			list2.append(new DLNode(i));
+		for (double d = N; d < 2 * N; d++)
+			list2.append(new DLNode(d));
+
+		System.out.println(list2);
+
+		DLNode temp = list2.search(0);
+		System.out.println(temp);
+
+		list2.insertAfter(temp, new DLNode(2000));
+		System.out.println(list2);
+
+		list2.remove(temp);
+		System.out.println(list2);
+
+		System.out.println();
+	}
+
+	public static void testStackQueue() {
+
+		System.out.println("Stack");
+
+		SLList stack1 = new SLList();
+		final int M = 10;
+		for (int i = 1; i < M; i++) {
+			System.out.print("push " + i + ": ");
+			stack1.push(i);
+			System.out.println(stack1);
+		}
+		for (int i = 1; i < M; i++) {
+			System.out.print(stack1.pop() + " pop: ");
+			System.out.println(stack1);
+		}
+		System.out.println();
+
+		System.out.println("Quene");
+
+		SLList queue1 = new SLList();
+
+		for (int i = 1; i < M; i++) {
+			System.out.print("enqueue " + i + ": ");
+			queue1.enqueue(i);
+			System.out.println(queue1);
+		}
+
+		for (int i = 1; i < M; i++) {
+			System.out.print(queue1.dequeue() + " dequeue: ");
+			System.out.println(queue1);
+		}
+		System.out.println();
+	}
+	public static class SLNode {
+		Object data;
+		SLNode next;
+
+		SLNode(Object o) {
+			data = o;
+			next = null;
+		}
+
+		public String toString() {
+			return "[" + data + "]";
+		}
+	}
+
+	public static class DLNode {
+		Object data;
+		DLNode next;
+		DLNode prev;
+
+		DLNode(Object o) {
+			data = o;
+			next = null;
+			prev = null;
+		}
+
+		public String toString() {
+			return "[" + data + "]";
+		}
+	}
+
+	public static class SLList {
+
+		private SLNode head;
+		private SLNode tail;
+		//		public SLNode curNode;
+		//		public SLNode sucNode;
+
+		SLList() {
+			head = null;
+			tail = null;
+		}
+		public void append(SLNode newNode)
+		{
+			if(head == null){
+				head = newNode;
+				tail = newNode;
+			}
+			else{
+				tail.next = newNode;
+				tail = newNode;
+			}
+		}
+		public void prepend(SLNode newNode)
+		{
+			if(head == null){
+				head = newNode;
+				tail = newNode;
+			}
+			else{
+				SLNode temp = head;
+				head = newNode;
+				newNode.next = temp;
+			}
+
+		}
+		public void insertAfter(SLNode curNode, SLNode newNode){
+			//curNode = tail;
+			if(head == null){
+				head = newNode;
+				tail = newNode;
+			}
+			else if(curNode == tail){
+				tail.next = newNode;
+				tail = newNode;
+			}
+			else{
+				newNode.next = curNode.next;
+				curNode.next = newNode;
+			}
+
+		}
+		public void removeAfter(SLNode curNode){
+			SLNode sucNode;
+
+			if(curNode == null){
+				if(head != null){
+					sucNode = head.next;
+					head = sucNode;
+
+					if(sucNode == null)
+						tail = null;
+				}
+			}
+			else if(curNode.next != null){
+				sucNode = curNode.next.next;
+				curNode.next = sucNode;
+
+				if(sucNode == null){
+					tail = curNode;
+				}
+			}
+		}
+		public SLNode search (Object key){
+			SLNode curNode = head;
+			while(curNode != null){
+				if(curNode.data.equals(key)) {
+					return curNode;
+				}
+				curNode = curNode.next;
+			}
+			return null;
+		}
+		public int size(){
+			SLNode curNode = head;
+			int curIndex = 0;
+			while(curNode != null){
+				curNode = curNode.next;
+				curIndex++;
+			}
+			return curIndex;
+		}
+		public String toString(){
+			SLNode curNode = head;
+			String temp = "";
+
+			while(curNode != null){
+				temp += curNode + "->";
+				//System.out.println(curNode + "->");
+				curNode = curNode.next;
+			}
+			return temp + "X";
+		}
+		void stackPush(SLNode newItem){
+				prepend(newItem);
+		}
+		SLNode stackPop(){
+			SLNode popItem;
+			popItem = head;
+			removeAfter(null);
+			return popItem;
+			
+
+		}
+		void qeuePush(SLNode newItem){
+			append(newItem);
+		}
+		SLNode queuePop(){
+			if(head == null)
+				return null;
+			SLNode poppedItem = head;
+			return poppedItem;
+		}
+		void push(Object newData){
+			stackPush(new SLNode(newData));
+		}
+		Object pop() {  
+
+			SLNode temp = stackPop();
+
+			if (temp != null) 
+
+				return temp.data;
+
+			return null;
+		}
+		void enqueue(Object newData){
+			append(new SLNode (newData));
+		}
+		public SLNode dequeue(){
+			SLNode poppedItem;
+			poppedItem = head;
+			removeAfter(null);
+			return poppedItem;
+		}
+
+	}
+	public static class DLList {
+		private int n;
+		private DLNode head;
+		private DLNode tail;
+		private DLNode prev;
+		public DLNode sucNode;
+		public DLNode predNode;
+
+		DLList() {
+			head = null;
+			tail = null;
+			prev = null;
+		}
+		public boolean isEmpty(){ 
+			return n == 0; 
+		}
+		public int size(){ 
+			return n;      
+		}
+		public void append(DLNode newNode)
+		{
+			if(head == null){
+				head = newNode;
+				tail = newNode;
+			}
+			else{
+				tail.next = newNode;
+				this.prev = tail;
+				tail = newNode;
+			}
+		}
+		public void prepend(DLNode newNode){
+			if(head == null){
+				head = newNode;
+				tail = newNode;
+			}
+			else {
+				newNode.next = head;
+				this.head = newNode;
+				head = newNode;
+			}
+		}
+		public void insertAfter(DLNode curNode, DLNode newNode){
+			//curNode = tail;
+
+			if(head ==null){
+				head = newNode;
+				tail = newNode;
+			}
+			else if(curNode == tail){
+				tail.next = newNode;
+				this.prev = tail;
+				tail = newNode;
+			}
+			else{
+				sucNode = curNode.next;
+				newNode.next = sucNode;
+				newNode.prev = tail;
+				curNode.next = newNode;
+				sucNode.prev = newNode;
+			}
+		}
+		public void setPrev(DLNode p){
+			prev = p;
+		}
+		public void remove(DLNode curNode){
+			if(curNode == null)
+				return;
+			DLNode sucNode = curNode.next;
+			DLNode predNode = curNode.prev;
+			if(sucNode != null){
+				sucNode.prev = predNode;
+			}
+			if(predNode != null){
+				predNode.next = sucNode;
+			}
+			if(curNode == head){
+				head = sucNode;
+			}
+			if(curNode == tail){
+				tail = predNode;
+			}
+		}
+		public DLNode search (Object key){
+			DLNode curNode = head;
+			while(curNode != null){
+				if(curNode.data.equals(key)) {
+					return curNode;
+				}
+				curNode = curNode.next;
+			}
+			return null;
+		}
+		public DLNode reverseSearch (Object key){
+			DLNode curNode = tail;
+			while(curNode != null){
+				if(curNode.data.equals(key)) {
+					return curNode;
+				}
+				curNode = curNode.prev;
+			}
+			return null;
+		}
+		public String toString(){
+			DLNode curNode = head;
+			String temp = "";
+
+			while(curNode != null){
+				temp += curNode + "->";
+				curNode = curNode.next;
+			}
+			return temp + "X";
+		}
+		void stackPush(DLNode newItem){
+			if(head == null){
+				prepend(newItem);
+			}
+			else{
+				tail.next = newItem;
+				tail = newItem;
+			}
+		}
+		DLNode stackPop(){
+			if(head == null)
+				return null;
+			DLNode poppedItem = head;
+			return poppedItem;
+		}
+		void qeuePush(DLNode newItem){
+			append(newItem);
+		}
+		DLNode queuePop(){
+			if(head == null)
+				return null;
+			DLNode poppedItem = head;
+			return poppedItem;
+		}
+		void push(Object newData){
+			stackPush(new DLNode(newData));
+		}
+		Object pop() {  
+
+			DLNode temp = stackPop();
+
+			if (temp != null) 
+
+				return temp.data;
+
+			return null;
+		}
+		void enqueue(Object newData){
+			append(new DLNode (newData));
+		}
+		public DLNode dequeue(){
+			DLNode poppedItem;
+			poppedItem = head;
+			remove(null);
+			return poppedItem;
+		}
+
+	}
+}
